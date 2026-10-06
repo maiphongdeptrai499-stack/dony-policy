@@ -1,62 +1,146 @@
 # Privacy Policy
 
-**Dymo** (the "Bot")
-Last updated: October 4, 2026
+**Last updated: October 6, 2026**
 
-This Privacy Policy explains what information the Bot accesses when you use it on Discord, what it does with that information, and your choices. By adding the Bot to a server or using its commands, you agree to this policy.
+This Privacy Policy describes how **Dymo** ("the Bot", "we", "us") collects, uses, stores, and protects information when you use our Discord bot and web dashboard. We are committed to protecting your privacy and handling all data with transparency and care.
 
-## 1. Summary
+---
 
-- The Bot is a moderation utility. It only reacts to commands that start with its prefix (`?`) or slash commands such as `/help`.
-- **The Bot does not store personal data.** It has no database and keeps no message content, user profiles, or logs of your activity.
-- We do not sell, rent, or share your information with anyone.
+## 1. Information We Collect
 
-## 2. Information the Bot can access
+### 1.1 Data Collected Automatically
 
-To work, the Bot receives the following information from Discord while it is in a server. It is used only to run the command that was requested, in the moment, and is not saved.
+When Dymo is active in your Discord server, we may collect the following through the Discord Gateway and API:
 
-- **User and member data:** user IDs, usernames, display names, server nicknames, avatars, roles, permissions, the date a user joined the server, and the date an account was created. This is used for commands such as `?w`, `?av`, `?role`, `?nick`, `?setnick`, `?ban`, `?kick`, `?mute`, and similar.
-- **Server data:** server name, icon, owner, member count, roles, channels, and boost status. This is used for commands such as `?serverinfo`, `?roleinfo`, and `?roles`.
-- **Message content:** the Bot reads messages in channels it can see in order to detect commands that begin with its prefix. Messages that are not commands are ignored and are not stored or analyzed.
-- **Recent message metadata for `?purge`:** when a moderator runs `?purge` or `?purge user`, the Bot reads the recent messages in that channel (message ID, author ID, and timestamp) only to decide which messages to delete, then deletes them.
+| Data Type | Purpose | Stored? |
+|---|---|---|
+| Server (Guild) ID, name, owner ID | Server identification and configuration | ✅ Yes – MongoDB |
+| User IDs (members) | Moderation records, exemption lists | ✅ Yes – MongoDB |
+| Role information | Anti-nuke protection, seal enforcement | ✅ Yes – MongoDB |
+| Member join/leave events | Anti-escape enforcement for active punishments | ❌ No – processed in-memory only |
+| Message content | Deleted/edited log display, scam detection, spam analysis | ❌ No – RAM cache only (≤20 min) |
+| Audit Log entries | Identifying actors in anti-nuke events | ❌ No – read-only, not stored |
+| Punishment records | Active seal/sseal enforcement | ✅ Yes – MongoDB |
 
-## 3. Information the Bot stores
+### 1.2 Dashboard Authentication
 
-None. The Bot does not keep a database and does not save message content, user data, or moderation history.
+Our web dashboard uses **Discord OAuth2** for authentication. During login, we receive your Discord user ID, username, avatar, and guild list. This data is stored only in an encrypted server-side session and is discarded upon logout or session expiry. We do not store OAuth2 tokens beyond the active session.
 
-The Bot's hosting provider may keep short-lived technical logs (for example, startup messages and error traces) so that we can fix problems. We do not intentionally write message content or personal data to these logs, and they are deleted or overwritten automatically by the provider.
+### 1.3 Data We Do NOT Collect
 
-## 4. Discord audit log
+We explicitly do **not** collect:
 
-When a moderator uses a command that changes something in a server (such as ban, kick, mute, role changes, or nickname changes), the Bot attaches a reason to Discord's own audit log entry. That reason contains the moderator's username, user ID, and the reason they typed, if any. Audit log entries are created and kept by Discord inside the server, are controlled by that server's administrators, and are subject to Discord's own policies.
+- Email addresses
+- Passwords or credentials of any kind
+- Payment information
+- Private/direct message (DM) content — the bot only operates within servers
+- Voice channel audio or metadata
+- Any data from servers the bot is not a member of
 
-## 5. How we use information
+---
 
-We use information only to carry out the commands that a server administrator requests and to keep the Bot working and secure. We do not use it for advertising, profiling, analytics, or training any machine-learning model.
+## 2. How We Use Your Data
 
-## 6. Sharing of information
+Data collected by Dymo is used **exclusively** for bot operation:
 
-We do not sell, rent, trade, or share your information. Information is processed through Discord's platform and through the cloud provider that hosts the Bot. Those providers process data under their own terms and privacy policies.
+- **Server configuration** – Storing your chosen settings (auto-mod rules, anti-nuke thresholds, log channels, etc.) so they persist across bot restarts.
+- **Moderation enforcement** – Maintaining active punishment records, exemption lists, and admin hierarchies.
+- **Security features** – Detecting destructive server actions (mass bans, role deletions, webhook spam) and automatically reverting them in real time.
+- **Message logging** – Temporarily caching message content in RAM to provide deleted/edited message logs to your server moderators. This cache is never written to disk.
+- **Anti-escape enforcement** – Detecting when a punished member leaves and rejoins your server, and automatically re-applying their punishment.
 
-## 7. Retention and deletion
+We do **not** use your data for advertising, user profiling, analytics sales, or any commercial purpose.
 
-Because the Bot does not store personal data, there is nothing to retain or delete. Removing the Bot from your server stops all processing from that server immediately. If you believe we hold information about you, contact us (see Section 10) and we will respond and delete it if it exists.
+---
 
-## 8. Security
+## 3. Message Content Intent
 
-The Bot's access token is kept secret and is not shared. Commands can be used only by members who have the Administrator permission in the server. We take reasonable steps to protect the Bot, but no online service can be guaranteed to be perfectly secure.
+Dymo uses Discord's **Message Content Privileged Intent** solely to:
 
-## 9. Children
+1. Cache message content in-memory (maximum 800 messages per server, purged after 20 minutes) so that moderators can see what was written in deleted or edited messages.
+2. Scan message text against a list of known scam/phishing domains to protect server members from malicious links.
+3. Analyze message frequency and patterns for spam detection.
 
-The Bot is not directed to children. Discord requires its users to meet a minimum age (13, or higher where local law requires), and users must follow Discord's rules. We do not knowingly collect personal information from children.
+Message content is processed exclusively in RAM and is **never written to a database, log file, or any external service**. Messages from bot accounts, users with the `Manage Messages` or `Administrator` permission, and channels manually excluded by administrators are **excluded** from all processing.
 
-## 10. Contact
+---
 
-Questions or requests about this policy:
+## 4. Server Members Intent
 
-- Email: **[YOUR CONTACT EMAIL]**
-- Discord support server: **[YOUR SUPPORT SERVER LINK]**
+Dymo uses Discord's **Server Members Intent** solely to:
 
-## 11. Changes to this policy
+1. Receive `on_member_join` events to re-apply active punishments when a previously punished member rejoins (anti-escape).
+2. Receive `on_member_update` events to detect and revert unauthorized removal of enforcement roles (seal/sseal).
+3. Accurately resolve member information for moderation commands that require looking up a member by name or ID.
+4. Maintain an up-to-date member list for anti-nuke threat detection.
 
-We may update this policy from time to time. The "Last updated" date at the top shows when it last changed. Continuing to use the Bot after a change means you accept the updated policy.
+Member data processed via this intent is used **only** for the moderation and security purposes described above.
+
+---
+
+## 5. Data Storage and Security
+
+All persistent data is stored in a **MongoDB** database with the following security measures:
+
+- **Encryption at rest**: The database volume is encrypted using AES-256.
+- **Encryption in transit**: All connections between the bot, dashboard, and database use TLS 1.3.
+- **Access control**: Database credentials are stored as environment variables and are never committed to version control. Access is restricted to bot and dashboard services only.
+- **Session security**: Dashboard sessions are encrypted with a secret key and transmitted over HTTPS only.
+- **Minimal surface**: The bot does not expose any public API endpoint that reads or writes user data without authentication. The internal dashboard API requires a shared secret for every write operation.
+- **Secret management**: All credentials (Discord token, MongoDB URI, OAuth2 secrets) are managed via environment variables with no hard-coded values in source code.
+
+We are committed to industry-standard security practices and will notify affected users promptly in the event of a data breach.
+
+---
+
+## 6. Data Retention
+
+| Data | Retention Period |
+|---|---|
+| Message content cache | ≤20 minutes in RAM; immediately evicted on bot restart |
+| Active punishment records | Until punishment is lifted (manually or by expiry) |
+| Server configuration | Deleted within 30 days of bot removal from server |
+| Guild membership record | Deleted immediately when bot leaves/is removed from server |
+| Dashboard session | Deleted on logout or after session expiry (default 24 hours) |
+
+---
+
+## 7. Data Sharing
+
+We **do not** sell, rent, trade, or share your personal data with third parties, except:
+
+- **Discord Inc.**: Interaction with the Discord API is necessary for the bot to function. Data shared with Discord is governed by [Discord's Privacy Policy](https://discord.com/privacy).
+- **Hosting and infrastructure providers**: Our database and bot hosting infrastructure providers process data on our behalf under appropriate data processing agreements. These providers do not have access to data for their own purposes.
+- **Legal requirements**: We may disclose data if required by applicable law or a valid legal order.
+
+---
+
+## 8. Your Rights
+
+You have the right to:
+
+- **Access**: Request a copy of the data we hold about you.
+- **Deletion**: Request deletion of your data. For server-level data (configuration, punishment records), the server owner may also request deletion.
+- **Correction**: Request correction of inaccurate data.
+- **Objection**: Object to data processing where we rely on legitimate interests.
+- **Removal**: You may remove Dymo from your server at any time. All server-level data will be deleted within 30 days of removal.
+
+To exercise these rights, contact us via our official Discord support server or GitHub repository.
+
+---
+
+## 9. Children's Privacy
+
+Dymo is not directed to children under the age of 13 (or higher where required by local law). We do not knowingly collect data from children. If you believe a child under 13 has used the bot in violation of Discord's Terms, please contact us.
+
+---
+
+## 10. Changes to This Policy
+
+We may update this Privacy Policy at any time. Changes will be reflected by updating the "Last updated" date at the top. We will make reasonable efforts to notify server administrators of material changes. Continued use of Dymo after changes are posted constitutes acceptance.
+
+---
+
+## 11. Contact
+
+If you have any questions, concerns, or requests regarding this Privacy Policy or your data, please reach out to the Dymo development team through our official Discord support server or GitHub repository.
